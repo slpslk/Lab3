@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Lab1_3.Models;
+using Lab1_3.Storage;
 
 namespace Lab1_3
 {
@@ -26,6 +28,20 @@ namespace Lab1_3
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+
+            switch (Configuration["Storage:Type"].ToStorageEnum())
+            {
+                case StorageEnum.MemCache:
+                    services.AddSingleton<IStorage<PlayerData>, MemCache>();
+                    break;
+                case StorageEnum.FileStorage:
+                    services.AddSingleton<IStorage<PlayerData>>(
+                        x => new FileStorage(Configuration["Storage:FileStorage:Filename"], int.Parse(Configuration["Storage:FileStorage:FlushPeriod"])));
+                    break;
+                default:
+                    throw new IndexOutOfRangeException($"Storage type '{Configuration["Storage:Type"]}' is unknown");
+            }
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

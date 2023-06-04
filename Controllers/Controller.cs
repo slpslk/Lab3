@@ -10,7 +10,12 @@ namespace pavlovLab.Controllers
     [ApiController]
     public class LabController : ControllerBase
     {
-        private static IStorage<PlayerData> _memCache = new MemCache();
+        private IStorage<PlayerData> _memCache;
+
+        public LabController(IStorage<PlayerData> memCache)
+        {
+            _memCache = memCache;
+        }
 
         [HttpGet]
         public ActionResult<IEnumerable<PlayerData>> Get()
